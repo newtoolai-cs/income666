@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script RB</title>
+    <style>
+        :root {
+            --bg: #f5f5f5;
+            --card-bg: #ffffff;
+            --text: #1a1a2e;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --accent: #3b82f6;
+            --accent-green: #22c55e;
+            --sidebar-bg: #ffffff;
+            --sidebar-width: 220px;
+            --robux-green: #00b06f;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px 16px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo {
+            width: 36px; height: 36px;
+            background: var(--accent);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 800; font-size: 16px;
+        }
+
+        .sidebar-title { font-size: 18px; font-weight: 800; }
+
+        .sidebar-user {
+            padding: 12px 16px;
+            display: flex; align-items: center; gap: 10px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+
+        .user-avatar {
+            width: 32px; height: 32px;
+            background: #e0e7ff;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+
+        .user-info { flex: 1; }
+        .user-name { font-size: 13px; font-weight: 600; }
+        .user-robux { font-size: 11px; color: var(--robux-green); font-weight: 700; }
+
+        .sidebar nav { flex: 1; padding: 8px 0; }
+
+        .sidebar nav ul { list-style: none; }
+
+        .sidebar nav li a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 10px;
+            margin: 2px 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .sidebar nav li a:hover { background: #f3f4f6; color: var(--text); }
+        .sidebar nav li a.active { background: #eff6ff; color: var(--accent); font-weight: 600; }
+
+        .sidebar nav li a svg {
+            width: 20px; height: 20px; flex-shrink: 0;
+        }
+
+        /* ===== MAIN ===== */
+        .main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card-bg);
+            position: sticky; top: 0; z-index: 50;
+        }
+
+        .topbar-title { font-size: 22px; font-weight: 700; }
+
+        .topbar-actions { display: flex; align-items: center; gap: 12px; }
+
+        .robux-badge {
+            display: flex; align-items: center; gap: 6px;
+            background: #ecfdf5;
+            border: 1px solid #bbf7d0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--robux-green);
+            cursor: pointer;
+        }
+
+        .robux-badge:hover { background: #d1fae5; }
+
+        .search-btn {
+            width: 36px; height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+
+        .search-bar {
+            display: none;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .search-bar.show { display: block; }
+
+        .search-bar input {
+            width: 100%;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-bar input:focus { border-color: var(--accent); }
+
+        /* ===== PAGES ===== */
+        .page { display: none; padding: 24px; }
+        .page.active { display: block; }
+
+        /* ===== HOME PAGE ===== */
+        .home-welcome {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .connections-section { margin-bottom: 32px; }
+        .connections-title {
+            font-size: 16px; font-weight: 600;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .connections-row {
+            display: flex; gap: 16px; flex-wrap: wrap;
+        }
+
+        .connection-card {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 6px; width: 72px;
+        }
+
+        .connection-avatar {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: #e0e7ff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            position: relative;
+        }
+
+        .connection-avatar.add {
+            border: 2px dashed var(--border);
+            background: #fff;
+            font-size: 24px; color: #aaa;
+        }
+
+        .connection-name {
+            font-size: 11px; color: var(--text-secondary);
+            text-align: center;
+            overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap; width: 100%;
+        }
+
+        .online-dot {
+            position: absolute; bottom: 2px; right: 2px;
+            width: 12px; height: 12px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .section-title {
+            font-size: 16px; font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .game-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .game-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+
+        .game-thumb {
+            width: 100%; aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 32px;
+        }
+
+        .game-info { padding: 12px; }
+        .game-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        .game-rating { font-size: 11px; color: var(--text-secondary); }
+
+        /* ===== MARKETPLACE ===== */
+        .market-tabs {
+            display: flex; gap: 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .market-tab {
+            padding: 10px 20px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.15s;
+        }
+
+        .market-tab:hover { color: var(--text); }
+        .market-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .category-filters {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .cat-btn {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--text-secondary);
+        }
+
+        .cat-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .cat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .market-layout {
+            display: flex; gap: 24px;
+        }
+
+        .market-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 14px;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .item-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .item-card.selected { border-color: var(--accent); border-width: 2px; }
+
+        .item-thumb {
+            width: 100%; aspect-ratio: 1;
+            background: #f9fafb;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        .item-thumb img {
+            width: 100%; height: 100%;
+            object-fit: contain;
+        }
+
+        .item-thumb .placeholder-icon {
+            font-size: 48px;
+            opacity: 0.3;
+        }
+
+        .ugc-badge {
+            position: absolute;
+            top: 8px; left: 8px;
+            background: var(--accent-green);
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .item-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-creator { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-price { font-size: 13px; font-weight: 700; color: #e67e22; }
+        .item-price .r-icon { font-weight: 800; }
+
+        /* ===== PREVIEW PANEL ===== */
+        .avatar-preview {
+            width: 360px;
+            flex-shrink: 0;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            position: sticky;
+            top: 90px;
+            height: fit-content;
+            display: none;
+        }
+
+        .avatar-preview.show { display: block; }
+
+        .preview-img {
+            width: 100%; aspect-ratio: 3/4;
+            background: #f9fafb;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-img img {
+            width: 100%; height: 100%; object-fit: contain;
+        }
+
+        .preview-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .preview-creator { font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; }
+        .preview-price { font-size: 22px; font-weight: 800; color: #e67e22; margin-bottom: 16px; }
+
+        .buy-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-green);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .buy-btn:hover { opacity: 0.85; }
+
+        .buy-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        /* ===== FEATURED PAGE ===== */
+        .featured-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .featured-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: transform 0.15s, box-shadow 0.15s;
+            cursor: pointer;
+        }
+
+        .featured-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+
+        .featured-thumb {
+            width: 100%; aspect-ratio: 16/10;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px;
+        }
+
+        .featured-info { padding: 16px; }
+        .featured-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .featured-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+        .featured-meta { margin-top: 8px; font-size: 11px; color: var(--accent); font-weight: 600; }
+
+        /* ===== TEAM PAGE ===== */
+        .team-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .team-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .team-avatar {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: #e0e7ff;
+            margin: 0 auto 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+        }
+
+        .team-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .team-role { font-size: 12px; color: var(--text-secondary); }
+
+        /* ===== CLICKER (EARN) PAGE ===== */
+        .clicker-page {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; min-height: 60vh;
+            text-align: center;
+        }
+
+        .clicker-title {
+            font-size: 32px; font-weight: 900;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .clicker-avatar {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: #e0e7ff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 8px;
+        }
+
+        .clicker-username {
+            font-size: 14px; font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+
+        .click-target {
+            width: 120px; height: 120px;
+            border-radius: 20px;
+            background: #f3f4f6;
+            border: 3px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 48px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.08s, box-shadow 0.08s;
+            margin-bottom: 16px;
+        }
+
+        .click-target:active {
+            transform: scale(0.92);
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .click-count {
+            font-size: 28px; font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .click-label {
+            font-size: 13px; color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .withdraw-btn {
+            padding: 14px 40px;
+            background: var(--accent-green);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.15s, transform 0.1s;
+        }
+
+        .withdraw-btn:hover { opacity: 0.85; }
+        .withdraw-btn:active { transform: scale(0.96); }
+
+        /* ===== ROBUX MODAL ===== */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 600;
+            display: none;
+            align-items: center; justify-content: center;
+        }
+
+        .modal-overlay.show { display: flex; }
+
+        .modal-box {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 32px;
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.15);
+            animation: modalSlideIn 0.2s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            float: right;
+            background: none; border: none;
+            font-size: 20px; cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .modal-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+
+        .modal-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .modal-item-img {
+            width: 48px; height: 48px;
+            border-radius: 10px;
+            background: #e5e7eb;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        .modal-item-img img { width: 100%; height: 100%; object-fit: contain; }
+
+        .modal-item-info { flex: 1; }
+        .modal-item-name { font-size: 14px; font-weight: 600; }
+        .modal-item-price { font-size: 12px; color: #e67e22; font-weight: 700; }
+
+        .modal-total {
+            display: flex; justify-content: space-between;
+            font-size: 15px; font-weight: 700;
+            padding: 12px 0;
+            border-top: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .modal-buy-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent-green);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .modal-buy-btn:hover { opacity: 0.85; }
+
+        .toast {
+            position: fixed;
+            bottom: 24px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1a1a2e;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 999;
+            transition: transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .market-layout { flex-direction: column; }
+            .avatar-preview { width: 100%; position: static; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">R</div>
+            <span class="sidebar-title">Script RB</span>
+        </div>
+        <div class="sidebar-user">
+            <div class="user-avatar">&#x1F380;</div>
+            <div class="user-info">
+                <div class="user-name">RobloxQueen922</div>
+                <div class="user-robux"><span id="robuxDisplay">R$ 0</span></div>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                <li><a onclick="showPage('home')" data-page="home" class="active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>Home</span>
+                </a></li>
+                <li><a onclick="showPage('featured')" data-page="featured">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>Featured</span>
+                </a></li>
+                <li><a onclick="showPage('market')" data-page="market">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                    <span>Marketplace</span>
+                </a></li>
+                <li><a onclick="showPage('team')" data-page="team">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    <span>Team</span>
+                </a></li>
+                <li><a onclick="showPage('clicker')" data-page="clicker">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v2"/><path d="M12 16v2"/><path d="M8 12H6"/><path d="M18 12h-2"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>Earn</span>
+                </a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <div class="topbar-title" id="pageTitle">Home</div>
+            <div class="topbar-actions">
+                <div class="search-bar" id="searchBar">
+                    <input type="text" placeholder="Search..." id="searchInput" oninput="handleSearch()">
+                </div>
+                <div class="search-btn" onclick="toggleSearch()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <div class="robux-badge" onclick="openRobuxModal()" id="robuxDisplay2">R$ 0</div>
+            </div>
+        </div>
+
+        <!-- HOME PAGE -->
+        <div class="page active" id="page-home">
+            <p class="home-welcome">Welcome back, <strong>RobloxQueen922</strong>!</p>
+            <div class="connections-section">
+                <div class="connections-title">Connections (158) &#x203A;</div>
+                <div class="connections-row">
+                    <div class="connection-card">
+                        <div class="connection-avatar add">+</div>
+                        <div class="connection-name">Connect</div>
+                    </div>
+                    <div class="connection-card">
+                        <div class="connection-avatar" style="background:#fce4ec">&#x1F466;</div>
+                        <div class="connection-name">elabraham</div>
+                    </div>
+                    <div class="connection-card">
+                        <div class="connection-avatar" style="background:#e8eaf6">
+                            <span class="online-dot"></span>&#x1F467;
+                        </div>
+                        <div class="connection-name">imAlex</div>
+                    </div>
+                    <div class="connection-card">
+                        <div class="connection-avatar" style="background:#e0f2f1">&#x1F468;</div>
+                        <div class="connection-name">DarkKnight</div>
+                    </div>
+                    <div class="connection-card">
+                        <div class="connection-avatar" style="background:#fff3e0">
+                            <span class="online-dot"></span>&#x1F469;
+                        </div>
+                        <div class="connection-name">StarPlayer</div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-title">Recommended for You</div>
+            <div class="game-cards">
+                <div class="game-card">
+                    <div class="game-thumb" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">&#x1F3DD;</div>
+                    <div class="game-info">
+                        <div class="game-name">Natural Disaster Survival</div>
+                        <div class="game-rating">&#x1F44D; 90%</div>
+                    </div>
+                </div>
+                <div class="game-card">
+                    <div class="game-thumb" style="background:linear-gradient(135deg,#f093fb,#f5576c)">&#x2694;</div>
+                    <div class="game-info">
+                        <div class="game-name">Blade Ball</div>
+                        <div class="game-rating">&#x1F44D; 85%</div>
+                    </div>
+                </div>
+                <div class="game-card">
+                    <div class="game-thumb" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">&#x1F3E0;</div>
+                    <div class="game-info">
+                        <div class="game-name">Adopt Me!</div>
+                        <div class="game-rating">&#x1F44D; 92%</div>
+                    </div>
+                </div>
+                <div class="game-card">
+                    <div class="game-thumb" style="background:linear-gradient(135deg,#fa709a,#fee140)">&#x1F47B;</div>
+                    <div class="game-info">
+                        <div class="game-name">Doors</div>
+                        <div class="game-rating">&#x1F44D; 88%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-title">Popular Now</div>
+            <div class="game-cards">
+                <div class="game-card">
+                    <div class="game-thumb" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)">&#x1F3AE;</div>
+                    <div class="game-info">
+                        <div class="game-name">Brookhaven</div>
+                        <div class="game-rating">&#x1F44D; 87%</div>
+                    </div>
+                </div>
+                <div class="game-card">
+                    <div class="game-thumb" style="background:linear-gradient(135deg,#ffecd2,#fcb69f)">&#x1F3C3;</div>
+                    <div class="game-info">
+                        <div class="game-name">Tower of Hell</div>
+                        <div class="game-rating">&#x1F44D; 82%</div>
+                    </div>
+                </div>
+                <div class="game-card">
+                    <div class="game-thumb" style="background:linear-gradient(135deg,#89f7fe,#66a6ff)">&#x1F525;</div>
+                    <div class="game-info">
+                        <div class="game-name">Blox Fruits</div>
+                        <div class="game-rating">&#x1F44D; 91%</div>
+                    </div>
+                </div>
+                <div class="game-card">
+                    <div class="game-thumb" style="background:linear-gradient(135deg,#f6d365,#fda085)">&#x1F47E;</div>
+                    <div class="game-info">
+                        <div class="game-name">Murder Mystery 2</div>
+                        <div class="game-rating">&#x1F44D; 84%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FEATURED PAGE -->
+        <div class="page" id="page-featured">
+            <div class="featured-grid">
+                <div class="featured-card">
+                    <div class="featured-thumb" style="background:linear-gradient(135deg,#667eea,#764ba2)">&#x2728;</div>
+                    <div class="featured-info">
+                        <div class="featured-name">Winter Styles Collection</div>
+                        <div class="featured-desc">Discover the new exclusive winter avatar collection</div>
+                        <div class="featured-meta">NEW - 12 items</div>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="featured-thumb" style="background:linear-gradient(135deg,#f093fb,#f5576c)">&#x1F525;</div>
+                    <div class="featured-info">
+                        <div class="featured-name">UGC Trending</div>
+                        <div class="featured-desc">The best community-created items this week</div>
+                        <div class="featured-meta">POPULAR - 24 items</div>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="featured-thumb" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">&#x1F381;</div>
+                    <div class="featured-info">
+                        <div class="featured-name">Weekly Deals</div>
+                        <div class="featured-desc">Limited-time discounts on premium items</div>
+                        <div class="featured-meta">SALE - Up to 50% off</div>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="featured-thumb" style="background:linear-gradient(135deg,#fa709a,#fee140)">&#x1F451;</div>
+                    <div class="featured-info">
+                        <div class="featured-name">Premium Exclusives</div>
+                        <div class="featured-desc">Members-only limited-edition avatars</div>
+                        <div class="featured-meta">EXCLUSIVE - 8 items</div>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="featured-thumb" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">&#x1F916;</div>
+                    <div class="featured-info">
+                        <div class="featured-name">Sci-Fi Mega Pack</div>
+                        <div class="featured-desc">Robotic and futuristic avatar accessories</div>
+                        <div class="featured-meta">BUNDLE - 15 items</div>
+                    </div>
+                </div>
+                <div class="featured-card">
+                    <div class="featured-thumb" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)">&#x1F383;</div>
+                    <div class="featured-info">
+                        <div class="featured-name">Halloween Returns</div>
+                        <div class="featured-desc">Spooky classics are back for a limited time</div>
+                        <div class="featured-meta">LIMITED - Ends soon</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MARKETPLACE PAGE -->
+        <div class="page" id="page-market">
+            <div class="market-tabs">
+                <div class="market-tab active">Marketplace</div>
+                <div class="market-tab">Customize</div>
+            </div>
+            <div class="category-filters">
+                <button class="cat-btn active" onclick="filterCategory('all')">All</button>
+                <button class="cat-btn" onclick="filterCategory('avatars')">Avatars</button>
+                <button class="cat-btn" onclick="filterCategory('body')">Body</button>
+                <button class="cat-btn" onclick="filterCategory('clothing')">Clothing</button>
+                <button class="cat-btn" onclick="filterCategory('accessories')">Accessories</button>
+                <button class="cat-btn" onclick="filterCategory('animations')">Animations</button>
+            </div>
+            <div class="market-layout">
+                <div class="market-grid" id="marketGrid"></div>
+                <div class="avatar-preview" id="avatarPreview">
+                    <div class="preview-img" id="previewImg"></div>
+                    <div class="preview-name" id="previewName"></div>
+                    <div class="preview-creator" id="previewCreator"></div>
+                    <div class="preview-price" id="previewPrice"></div>
+                    <button class="buy-btn" id="buyBtn" onclick="buyItem()">Buy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEAM PAGE -->
+        <div class="page" id="page-team">
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar" style="background:#dbeafe">&#x1F468;&#x200D;&#x1F4BB;</div>
+                    <div class="team-name">NexS Studio</div>
+                    <div class="team-role">Lead Developer</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar" style="background:#fce4ec">&#x1F3A8;</div>
+                    <div class="team-name">MemeVerse UGC</div>
+                    <div class="team-role">Designer</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar" style="background:#e8f5e9">&#x1F6E0;</div>
+                    <div class="team-name">Y_Lightning Studios</div>
+                    <div class="team-role">Builder</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar" style="background:#fff3e0">&#x1F3B5;</div>
+                    <div class="team-name">AnimStudio</div>
+                    <div class="team-role">Animator</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar" style="background:#f3e5f5">&#x1F4DD;</div>
+                    <div class="team-name">AvatarShop</div>
+                    <div class="team-role">Script Writer</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar" style="background:#e0f7fa">&#x1F9E9;</div>
+                    <div class="team-name">HatMaster</div>
+                    <div class="team-role">Modeler</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLICKER (EARN) PAGE -->
+        <div class="page" id="page-clicker">
+            <div class="clicker-page">
+                <div class="clicker-title">ROBUX CLICKER</div>
+                <div class="clicker-avatar">&#x1F380;</div>
+                <div class="clicker-username">RobloxQueen922</div>
+                <div class="click-target" onclick="clickRobux()">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v2M12 16v2M8 12H6M18 12h-2"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+                <div class="click-count" id="clickCount">0</div>
+                <div class="click-label">Robux earned (not yet withdrawn)</div>
+                <button class="withdraw-btn" onclick="withdrawRobux()">Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROBUX MODAL -->
+    <div class="modal-overlay" id="robuxModal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeRobuxModal()">&times;</button>
+            <div class="modal-title">Need More Robux</div>
+            <div class="modal-subtitle">Current balance: <span id="robuxDisplay3">R$ 0</span></div>
+            <div id="modalItemContent"></div>
+            <div class="modal-total">
+                <span>Total</span>
+                <span id="modalTotal">R$ 0</span>
+            </div>
+            <button class="modal-buy-btn" onclick="confirmPurchase()">Buy Robux & Item</button>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== DATA =====
+        const marketItems = [
+            { id: 1,  name: "Elemental Crystal Golem",       creator: "Y_Lightning Studios", price: 150, cat: "avatars",     ugc: true,  img: "assets/elemental-crystal-golem.png"       },
+            { id: 2,  name: "Blocky LNX",                    creator: "MemeVerse UGC",       price: 200, cat: "avatars",     ugc: true,  img: "assets/blocky-lnx.png"                    },
+            { id: 3,  name: "Core Blocks Death Speaker",     creator: "NexS Studio",         price: 350, cat: "avatars",     ugc: true,  img: "assets/core-blocks-death-speaker.png"     },
+            { id: 4,  name: "Ud'Zal",                        creator: "Shoes Archive",       price: 120, cat: "avatars",     ugc: false, img: "assets/udzal.png"                         },
+            { id: 5,  name: "Pumpkin Reaper",                creator: "NoveS UGC",           price: 500, cat: "accessories", ugc: true,  img: "assets/pumpkin-reaper.png"                 },
+            { id: 6,  name: "Headless Horseman",             creator: "Welcome to Toyland",  price: 85,  cat: "avatars",     ugc: true,  img: "assets/headless-horseman.png"              },
+            { id: 7,  name: "Gang O' Price",                 creator: "FrenchJoints",        price: 175, cat: "clothing",    ugc: false, img: "assets/gang-o-price.png"                   },
+            { id: 8,  name: "Noob Attack-Mesh Mobility",     creator: "AvatarShop",          price: 280, cat: "avatars",     ugc: true,  img: "assets/noob-attack-mesh-mobility.png"      },
+            { id: 9,  name: "Roblox Zombie",                 creator: "AnimStudio",          price: 95,  cat: "body",        ugc: true,  img: "assets/roblox-zombie.png"                  },
+            { id: 10, name: "Rogue Space Assassin",          creator: "BodyShop",            price: 420, cat: "avatars",     ugc: true,  img: "assets/rogue-space-assassin.png"            },
+            { id: 11, name: "Knights of Redcliffe: Paladin", creator: "MemeVerse UGC",       price: 65,  cat: "accessories", ugc: false, img: "assets/knights-of-redcliffe-paladin.png"    },
+            { id: 12, name: "Junkbot",                       creator: "HatMaster",           price: 310, cat: "animations",  ugc: true,  img: "assets/junkbot.png"                        },
+        ];
+
+        let robuxBalance = 0;
+        let clickerCount = 0;
+        let currentFilter = 'all';
+        let selectedItem = null;
+        let pendingBuyItem = null;
+
+        // ===== IMAGE HELPERS =====
+        function getItemImage(id) {
+            const item = marketItems.find(i => i.id === id);
+            return item ? item.img : '';
+        }
+
+        // ===== RENDER MARKETPLACE =====
+        function renderItems(filter) {
+            currentFilter = filter;
+            const grid = document.getElementById('marketGrid');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = marketItems.filter(item => {
+                if (filter !== 'all' && item.cat !== filter) return false;
+                if (searchTerm && !item.name.toLowerCase().includes(searchTerm) && !item.creator.toLowerCase().includes(searchTerm)) return false;
+                return true;
+            });
+
+            grid.innerHTML = filtered.map(item => {
+                const imgSrc = getItemImage(item.id);
+                return `<div class="item-card ${selectedItem === item.id ? 'selected' : ''}" onclick="selectItem(${item.id})">
+                    ${item.ugc ? '<div class="ugc-badge">UGC</div>' : ''}
+                    <div class="item-thumb">
+                        <img src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=\\'placeholder-icon\\'>&#x1F464;</div>'">
+                    </div>
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-creator">${item.creator}</div>
+                    <div class="item-price"><span class="r-icon">R$</span> ${item.price}</div>
+                </div>`;
+            }).join('');
+
+            // Update filter buttons
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().replace(/\s/g,'') === filter || (filter === 'all' && btn.textContent === 'All'));
+            });
+        }
+
+        function selectItem(id) {
+            selectedItem = id;
+            showPreview(id);
+            renderItems(currentFilter);
+        }
+
+        function showPreview(id) {
+            const item = marketItems.find(i => i.id === id);
+            if (!item) return;
+            const panel = document.getElementById('avatarPreview');
+            const imgSrc = getItemImage(item.id);
+
+            document.getElementById('previewImg').innerHTML = `<img src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\\'font-size:64px;opacity:0.3\\'>&#x1F464;</div>'">`;
+            document.getElementById('previewName').textContent = item.name;
+            document.getElementById('previewCreator').textContent = item.creator;
+            document.getElementById('previewPrice').innerHTML = `<span class="r-icon">R$</span> ${item.price}`;
+
+            const btn = document.getElementById('buyBtn');
+            if (robuxBalance >= item.price) {
+                btn.textContent = 'Buy';
+                btn.disabled = false;
+            } else {
+                btn.textContent = 'Not Enough Robux';
+                btn.disabled = true;
+            }
+
+            panel.classList.add('show');
+        }
+
+        function buyItem() {
+            if (!selectedItem) return;
+            const item = marketItems.find(i => i.id === selectedItem);
+            if (!item) return;
+
+            if (robuxBalance >= item.price) {
+                robuxBalance -= item.price;
+                updateRobuxDisplays();
+                showToast(`Purchased ${item.name} for R$ ${item.price}!`);
+                showPreview(selectedItem);
+            } else {
+                pendingBuyItem = item;
+                openRobuxModal(item);
+            }
+        }
+
+        function filterCategory(cat) {
+            renderItems(cat);
+        }
+
+        function handleSearch() {
+            renderItems(currentFilter);
+        }
+
+        // ===== PAGES =====
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+
+            document.querySelectorAll('.sidebar nav a').forEach(a => {
+                a.classList.toggle('active', a.dataset.page === page);
+            });
+
+            const titles = { home: 'Home', featured: 'Featured', market: 'Marketplace', team: 'Team', clicker: 'Earn' };
+            document.getElementById('pageTitle').textContent = titles[page] || page;
+        }
+
+        // ===== ROBUX =====
+        function updateRobuxDisplays() {
+            const text = `R$ ${robuxBalance}`;
+            document.getElementById('robuxDisplay').textContent = text;
+            document.getElementById('robuxDisplay2').textContent = text;
+            document.getElementById('robuxDisplay3').textContent = text;
+            // Update buy button state if preview is open
+            if (selectedItem) showPreview(selectedItem);
+        }
+
+        function openRobuxModal(item) {
+            const modal = document.getElementById('robuxModal');
+            if (item) {
+                document.getElementById('modalItemContent').innerHTML = `
+                    <div class="modal-item">
+                        <div class="modal-item-img"><img src="${getItemImage(item.id)}" alt="${item.name}" onerror="this.parentNode.innerHTML='&#x1F464;'"></div>
+                        <div class="modal-item-info">
+                            <div class="modal-item-name">${item.name}</div>
+                            <div class="modal-item-price">R$ ${item.price}</div>
+                        </div>
+                    </div>`;
+                document.getElementById('modalTotal').textContent = `R$ ${item.price}`;
+            } else {
+                document.getElementById('modalItemContent').innerHTML = '<p style="color:#6b7280;font-size:13px;padding:12px 0;">Earn Robux by using the Earn tab clicker!</p>';
+                document.getElementById('modalTotal').textContent = `R$ 0`;
+            }
+            modal.classList.add('show');
+        }
+
+        function closeRobuxModal() {
+            document.getElementById('robuxModal').classList.remove('show');
+            pendingBuyItem = null;
+        }
+
+        function confirmPurchase() {
+            closeRobuxModal();
+            showToast('Earn Robux in the Earn tab first!');
+        }
+
+        // ===== CLICKER =====
+        function clickRobux() {
+            clickerCount++;
+            document.getElementById('clickCount').textContent = clickerCount;
+        }
+
+        function withdrawRobux() {
+            if (clickerCount <= 0) return;
+            robuxBalance += clickerCount;
+            showToast(`Withdrew R$ ${clickerCount} to your balance!`);
+            clickerCount = 0;
+            document.getElementById('clickCount').textContent = '0';
+            updateRobuxDisplays();
+        }
+
+        // ===== SEARCH =====
+        function toggleSearch() {
+            document.getElementById('searchBar').classList.toggle('show');
+            if (document.getElementById('searchBar').classList.contains('show')) {
+                document.getElementById('searchInput').focus();
+            }
+        }
+
+        // ===== TOAST =====
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        // ===== INIT =====
+        renderItems('all');
+    </script>
+</body>
+</html>
